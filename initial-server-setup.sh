@@ -196,6 +196,10 @@ sed -i "s#sqlalchemy_uri:.*#sqlalchemy_uri: postgresql+psycopg2://simsage:$db_pa
 docker cp dashboard_export_20250624T144642.zip superset:/app/
 docker exec -it superset superset import-dashboards -p /app/dashboard_export_20250624T144642.zip -u simsage
 
+# remove files afterwards
+rm -rf dashboard_export_20250624T144642/
+rm -f dashboard_export_20250624T144642.zip
+
 #################################################################################################
 # remind the user to set up their admin user for accessing superset
 printf "\nEnsure to put the cert-bundle and keys into the appropriate files in /opt/cert/\n"
