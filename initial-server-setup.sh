@@ -194,7 +194,6 @@ sed -i "s#sqlalchemy_uri:.*#sqlalchemy_uri: postgresql+psycopg2://simsage:$db_pa
 
 # copy this file into the superset container
 docker cp dashboard_export_20250624T144642.zip superset:/app/
-docker exec -it superset superset import-dashboards -p /app/dashboard_export_20250624T144642.zip -u simsage
 
 # remove files afterwards
 rm -rf dashboard_export_20250624T144642/
@@ -203,4 +202,6 @@ rm -f dashboard_export_20250624T144642.zip
 #################################################################################################
 # remind the user to set up their admin user for accessing superset
 printf "\nEnsure to put the cert-bundle and keys into the appropriate files in /opt/cert/\n"
-printf "\nyou must run\n\ndocker exec -it superset superset fab create-admin\n\nto create your initial admin user\n"
+printf "\nyou must run\n\ndocker exec -it superset superset fab create-admin\n\nto create your initial simsage user (must be 'simsage')\n"
+printf "\nonce that user exists, you can import the dashboard by running:\n"
+printf "docker exec -it superset superset import-dashboards -p /app/dashboard_export_20250624T144642.zip -u simsage\n\n"
