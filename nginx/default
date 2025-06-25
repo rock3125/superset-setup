@@ -1,0 +1,77 @@
+# This first server block handles all plain HTTP traffic on port 80.
+# Its only job is to permanently redirect users to the secure HTTPS version.
+server {
+    listen 80;
+    listen [::]:80; # Listen on IPv6 as well
+
+    # Replace this with your actual domain name
+    server_name <domainname>;
+
+    # Perform a 301 (permanent) redirect to the HTTPS version of the site
+    return 301 https://$host$request_uri;
+}
+
+# This is the main server block that handles all secure HTTPS traffic.
+server {
+    # Listen on port 443 for SSL traffic. http2 enables the newer protocol for better performance.
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2; # Listen on IPv6 as well
+
+    # Replace this with your actual domain name
+    server_name <domainname>;
+
+    # --- SSL Certificate Configuration ---
+    # Replace the file paths with the actual paths to your certificate and private key.
+    # 'fullchain.pem' should contain your certificate followed by any intermediate certificates.
+    ssl_certificate /opt/cert/cert-chain.txt;
+    # 'privkey.pem' is your private key. Keep this file secure!
+    ssl_certificate_key /opt/cert/key.txt;
+
+    # --- Modern SSL/TLS Security Settings (Recommended) ---
+    # Use only modern, secure TLS protocols.
+    ssl_protocols TLSv1.2 TLSv1.3;
+    # Use a strong set of ciphers.
+    ssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384';
+    ssl_prefer_server_ciphers on;
+
+    # Enable session caching for better performance on subsequent connections.
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    # Enable OCSP Stapling for faster SSL handshakes.
+    ssl_stapling on;
+    ssl_stapling_verify on;
+    # Add a DNS resolver for OCSP Stapling to work. Google's is a safe choice.
+    resolver 8.8.8.8 8.8.4.4 valid=300s;
+    resolver_timeout 5s;
+
+
+    # --- Proxy Configuration ---
+    # This location block matches all requests to your domain.
+    location / {
+        # This is the core directive. It passes the request to your backend service.
+        # It assumes your service (e.g., Superset) is running on the same machine on port 8088.
+        proxy_pass http://localhost:8088;
+
+        # --- Essential Proxy Headers ---
+        # These headers pass crucial information to your backend application.
+        # Passes the original host header from the client.
+        proxy_set_header Host $host;
+        # Passes the client's real IP address.
+        proxy_set_header X-Real-IP $remote_addr;
+        # Passes a list of IP addresses, showing the path the request took.
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        # Informs the backend that the original connection was made via HTTPS.
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # --- WebSocket Support (Important for modern apps like Superset) ---
+        # These headers are required to properly proxy WebSocket connections.
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        # Optional: Increase the read timeout for long-running queries or uploads.
+        # proxy_read_timeout 90;
+    }
+}
