@@ -1,8 +1,13 @@
 #!/bin/bash
 
+if [ $# -ne 2 ]; then
+  printf "$0 takes two parameters: <domain-name> <db-password>"
+  exit 1
+fi
+
 # set password below for DB access
-domain_name="superset.simsage.ai"
-db_password="fiefai7TaiTeeng6Ohx5"
+domain_name="$1"
+db_password="$2"
 
 # check is root
 if [ "$EUID" -ne 0 ]; then
