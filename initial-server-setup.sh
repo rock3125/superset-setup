@@ -40,7 +40,7 @@ apt install nano docker.io postgresql postgresql-contrib build-essential git net
 # log out and back in after this command!
 usermod -aG docker simsage
 
-pip3 install pandas psycopg2-binary psycopg2 pyarrow fastparquet --break-system-packages
+pip3 install pandas psycopg2-binary psycopg2 pyarrow fastparquet
 if [ $? -ne 0 ]; then
   printf "pip3 install failed\n"
   exit 1
@@ -49,8 +49,8 @@ fi
 #################################################################################################
 # set up postgres using the postgres user
 
-# check we have version 15 of postgres and can find the config files we need to change
-if [ ! -f "/etc/postgresql/15/main/pg_hba.conf" ]; then
+# check we have version 14 of postgres and can find the config files we need to change
+if [ ! -f "/etc/postgresql/14/main/pg_hba.conf" ]; then
   printf "wrong postgres version, please adjust script first\n"
   exit 1
 fi
@@ -90,11 +90,11 @@ fi
 
 # set localhost ipv4 and ipv6 to accept md5 password auth
 # and add docker bridge to allowed network access using md5
-sed -i 's|127.0.0.1.*scram-sha-256|127.0.0.1/32   md5\nhost  all  all  172.17.0.0/16  md5\n|g' /etc/postgresql/15/main/pg_hba.conf
-sed -i 's|::1/128.*scram-sha-256|::1/128   md5|g' /etc/postgresql/15/main/pg_hba.conf
+sed -i 's|127.0.0.1.*scram-sha-256|127.0.0.1/32   md5\nhost  all  all  172.17.0.0/16  md5\n|g' /etc/postgresql/14/main/pg_hba.conf
+sed -i 's|::1/128.*scram-sha-256|::1/128   md5|g' /etc/postgresql/14/main/pg_hba.conf
 
 # set the listen address to allow anyone
-sed -i "s/#listen_addresses.*/listen_addresses = '*'/g" /etc/postgresql/15/main/postgresql.conf
+sed -i "s/#listen_addresses.*/listen_addresses = '*'/g" /etc/postgresql/14/main/postgresql.conf
 
 # restart the postgres server
 systemctl restart postgresql
