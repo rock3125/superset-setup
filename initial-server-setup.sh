@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ $# -ne 2 ]; then
-  printf "$0 takes two parameters: <domain-name> <db-password>"
+  printf "$0 takes two parameters: <domain-name> <db-password>\n"
   exit 1
 fi
 
