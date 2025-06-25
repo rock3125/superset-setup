@@ -8,6 +8,7 @@ fi
 # set password below for DB access
 domain_name="$1"
 db_password="$2"
+local_ip=$(hostname -i)
 
 # check is root
 if [ "$EUID" -ne 0 ]; then
@@ -35,7 +36,7 @@ chmod a+x /etc/update-motd.d/98*
 chmod a+x /etc/update-motd.d/90*
 
 # 
-apt install nano docker.io postgresql postgresql-contrib build-essential git net-tools nginx python3-pip libpq-dev python3-dev libsystemd-dev -yyq
+apt install nano docker.io postgresql postgresql-contrib build-essential git net-tools nginx python3-pip libpq-dev python3-dev libsystemd-dev 7zip -yyq
 
 # log out and back in after this command!
 usermod -aG docker simsage
@@ -127,7 +128,7 @@ cp ./valkey/valkey.conf /etc/valkey/
 cp ./valkey/valkey.service /etc/systemd/system/
 
 # set local ip address for listening
-sed -i "s/<localip>/$(hostname -i)/g" /etc/valkey/valkey.conf
+sed -i "s/<localip>/$local_ip/g" /etc/valkey/valkey.conf
 
 systemctl daemon-reload
 systemctl start valkey.service
@@ -182,6 +183,18 @@ sed -i "s#<password>#$db_password#g" ./parquet/upload_parquet_to_postgres.py
 cd ./parquet
 python3 upload_parquet_to_postgres.py
 cd ..
+
+#################################################################################################
+# import our existing dashboard
+
+# unzip the existing dashboard, we need to set the password for the db
+7zz x dashboard_export_20250624.zip
+sed -i "s#sqlalchemy_uri:.*#sqlalchemy_uri: postgresql+psycopg2://simsage:$db_password@$local_ip:5432/parquet_store#g" dashboard_export_20250624T144642/databases/PostgreSQL.yaml
+7zz a -tzip dashboard_export_20250624T144642.zip dashboard_export_20250624T144642
+
+# copy this file into the superset container
+docker cp dashboard_export_20250624T144642.zip superset:/app/
+docker exec -it superset superset import-dashboards -p /app/dashboard_export_20250624T144642.zip -u simsage
 
 #################################################################################################
 # remind the user to set up their admin user for accessing superset
