@@ -186,4 +186,4 @@ cd ..
 #################################################################################################
 # remind the user to set up their admin user for accessing superset
 printf "\nEnsure to put the cert-bundle and keys into the appropriate files in /opt/cert/\n"
-printf "\nyou must run\n\ndocker exec -it superset superset fab create-admin\n\nto create your initial admin user"
+printf "\nyou must run\n\ndocker exec -it superset superset fab create-admin\n\nto create your initial admin user\n"
