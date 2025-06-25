@@ -1,5 +1,5 @@
 # superset-setup
-Helper for setting up superset on a Ubuntu server
+Helper for setting up superset on a Ubuntu server 22.04
 
 ## run
 sign-in as `simsage` user, and run 
